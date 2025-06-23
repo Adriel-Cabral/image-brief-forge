@@ -6,17 +6,26 @@ export const generateStructuredPrompt = async (briefing: string, apiUrl?: string
   }
 
   try {
-    console.log('Fazendo requisição para:', apiUrl);
+    console.log('Fazendo requisição para a API da OpenAI:', apiUrl);
     
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
+        'Authorization': 'Bearer SUA_CHAVE_DA_API',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        briefing: briefing.trim(),
-        timestamp: new Date().toISOString(),
-        request_type: 'prompt_generation'
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "Você atua como um especialista em desenvolver prompts eficazes para ferramentas de geração de imagens com inteligência artificial. Com base no briefing apresentado, elabore um prompt bem estruturado e criativo, que traduza com clareza a ideia proposta."
+          },
+          {
+            role: "user",
+            content: `Transforme o seguinte briefing em um prompt que será usado por uma IA de geração de imagem:\n\n${briefing.trim()}`
+          }
+        ]
       }),
     });
 
@@ -25,13 +34,13 @@ export const generateStructuredPrompt = async (briefing: string, apiUrl?: string
     }
 
     const data = await response.json();
-    console.log('Resposta da API:', data);
+    console.log('Resposta da API da OpenAI:', data);
     
-    // Assume que a API retorna um objeto com uma propriedade 'prompt'
-    return data.prompt || data.result || data.generated_prompt || generateLocalPrompt(briefing);
+    // Extrai o prompt da resposta da OpenAI
+    return data.choices?.[0]?.message?.content || generateLocalPrompt(briefing);
     
   } catch (error) {
-    console.error('Erro ao fazer requisição:', error);
+    console.error('Erro ao fazer requisição para OpenAI:', error);
     // Fallback para geração local em caso de erro
     return generateLocalPrompt(briefing);
   }
