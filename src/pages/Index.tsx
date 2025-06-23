@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import BriefingForm from '@/components/BriefingForm';
 import PromptCard from '@/components/PromptCard';
 import BriefingTips from '@/components/BriefingTips';
+import BriefingExamples from '@/components/BriefingExamples';
 import { generateStructuredPrompt } from '@/utils/promptGenerator';
 
 const Index = () => {
@@ -88,6 +88,9 @@ const Index = () => {
 
         {/* Tips Section */}
         <BriefingTips />
+
+        {/* Examples Section */}
+        <BriefingExamples />
       </main>
 
       {/* Footer */}
