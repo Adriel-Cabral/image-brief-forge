@@ -1,25 +1,43 @@
+
 import { useState } from 'react';
 import BriefingForm from '@/components/BriefingForm';
 import PromptCard from '@/components/PromptCard';
 import BriefingTips from '@/components/BriefingTips';
 import BriefingExamples from '@/components/BriefingExamples';
 import { generateStructuredPrompt } from '@/utils/promptGenerator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
   const [originalBriefing, setOriginalBriefing] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [apiUrl, setApiUrl] = useState<string>('');
 
   const handleGeneratePrompt = async (briefing: string) => {
     setIsLoading(true);
     setOriginalBriefing(briefing);
     
-    // Simula um delay de processamento para melhor UX
-    setTimeout(() => {
-      const prompt = generateStructuredPrompt(briefing);
+    try {
+      console.log('Gerando prompt...', { briefing, apiUrl });
+      
+      const prompt = await generateStructuredPrompt(briefing, apiUrl || undefined);
       setGeneratedPrompt(prompt);
+      
+      if (apiUrl) {
+        toast.success('Prompt gerado com sucesso!', {
+          description: 'Requisição à API realizada com sucesso'
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao gerar prompt:', error);
+      toast.error('Erro ao gerar prompt', {
+        description: 'Usando geração local como fallback'
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -46,6 +64,26 @@ const Index = () => {
             Converta suas ideias e briefings em prompts estruturados e otimizados 
             para ferramentas de geração de imagem com inteligência artificial.
           </p>
+        </div>
+
+        {/* API Configuration */}
+        <div className="mb-8 max-w-4xl mx-auto">
+          <div className="bg-white/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200">
+            <Label htmlFor="api-url" className="text-lg font-medium text-gray-700 mb-3 block">
+              URL da API (opcional):
+            </Label>
+            <Input
+              id="api-url"
+              type="url"
+              value={apiUrl}
+              onChange={(e) => setApiUrl(e.target.value)}
+              placeholder="https://sua-api.com/generate-prompt"
+              className="text-base border-2 border-gray-200 focus:border-blue-400 transition-colors duration-200"
+            />
+            <p className="text-sm text-gray-500 mt-2">
+              Se não fornecida, será usado o gerador local
+            </p>
+          </div>
         </div>
 
         {/* Form Section */}
@@ -80,7 +118,7 @@ const Index = () => {
             <div className="inline-flex items-center space-x-3">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <span className="text-lg text-gray-600">
-                Estruturando seu prompt...
+                {apiUrl ? 'Consultando API...' : 'Estruturando seu prompt...'}
               </span>
             </div>
           </div>
